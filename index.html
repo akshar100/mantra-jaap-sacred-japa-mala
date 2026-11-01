@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mantra Jaap - Sacred Japa Mala</title>
+  
+  <!-- PWA Metadata -->
+  <meta name="theme-color" content="#d97706">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Digital Japa Mala Counter for Hindu Mantra Jaap with sacred sounds, progress ring, and offline PWA capabilities.">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- JSZip for dynamic ZIP export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- FileSaver.js for reliable client-side downloads -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+  <!-- Google Fonts for Vedic / Spiritual typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Yatra+One&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sanskrit: ['"Yatra One"', 'cursive'],
+            sacred: ['Cinzel', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            saffron: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              200: '#fde68a',
+              300: '#fcd34d',
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309',
+              800: '#92400e',
+              900: '#78350f',
+              950: '#451a03',
+            },
+            marigold: '#EA580C',
+            sacredGold: '#F59E0B',
+            spiritualDark: '#120c06',
+            spiritualCard: '#1d140a'
+          },
+          animation: {
+            'pulse-subtle': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'spin-slow': 'spin 60s linear infinite',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Touch optimizations */
+    body {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    
+    /* Radial aura glow */
+    .spiritual-aura {
+      background: radial-gradient(circle at center, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.05) 50%, transparent 70%);
+    }
+
+    /* Subtle bead ring pattern */
+    .sacred-ring {
+      transition: stroke-dashoffset 0.25s ease-out;
+    }
+
+    /* Button active tactile push effect */
+    .tap-zone:active {
+      transform: scale(0.96);
+    }
+    
+    /* Custom scrollbar for mantra list */
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #b45309;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-stone-900 text-stone-100 font-sans min-h-screen flex flex-col justify-between selection:bg-amber-600 selection:text-white transition-colors duration-300">
+
+  <!-- Background Sacred Mandala Overlay -->
+  <div class="fixed inset-0 pointer-events-none flex items-center justify-center overflow-hidden opacity-10 dark:opacity-15 z-0">
+    <svg class="w-[600px] h-[600px] sm:w-[850px] sm:h-[850px] text-amber-500 animate-spin-slow" viewBox="0 0 200 200" fill="none" stroke="currentColor">
+      <circle cx="100" cy="100" r="95" stroke-width="0.5" stroke-dasharray="2 3"/>
+      <circle cx="100" cy="100" r="80" stroke-width="0.75"/>
+      <circle cx="100" cy="100" r="60" stroke-width="0.5"/>
+      <circle cx="100" cy="100" r="30" stroke-width="0.75"/>
+      <!-- Petal geometry -->
+      <path d="M 100 20 C 120 60 120 60 100 100 C 80 60 80 60 100 20 Z" stroke-width="0.5"/>
+      <path d="M 100 180 C 120 140 120 140 100 100 C 80 140 80 140 100 180 Z" stroke-width="0.5"/>
+      <path d="M 20 100 C 60 120 60 120 100 100 C 60 80 60 80 20 100 Z" stroke-width="0.5"/>
+      <path d="M 180 100 C 140 120 140 120 100 100 C 140 80 140 80 180 100 Z" stroke-width="0.5"/>
+      <path d="M 43 43 C 75 75 75 75 100 100 C 70 70 70 70 43 43 Z" stroke-width="0.5"/>
+      <path d="M 157 157 C 125 125 125 125 100 100 C 130 130 130 130 157 157 Z" stroke-width="0.5"/>
+      <path d="M 43 157 C 75 125 75 125 100 100 C 70 130 70 130 43 157 Z" stroke-width="0.5"/>
+      <path d="M 157 43 C 125 75 125 75 100 100 C 130 70 130 70 157 43 Z" stroke-width="0.5"/>
+    </svg>
+  </div>
+
+  <!-- Ambient Light Center Glow -->
+  <div class="fixed inset-0 pointer-events-none spiritual-aura z-0"></div>
+
+  <!-- HEADER -->
+  <header class="relative z-10 w-full max-w-xl mx-auto px-4 py-3 flex items-center justify-between border-b border-amber-900/40">
+    <div class="flex items-center space-x-2">
+      <span class="text-3xl text-amber-500 font-sanskrit">ॐ</span>
+      <div>
+        <h1 class="font-sacred font-bold text-amber-400 text-lg leading-tight tracking-wider">JAPA MALA</h1>
+        <p class="text-[11px] text-stone-400 font-medium tracking-widest uppercase">Sacred Mantra Counter</p>
+      </div>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="flex items-center space-x-2">
+      <!-- PWA Download ZIP Button -->
+      <button id="downloadZipBtn" title="Download Complete PWA as ZIP" 
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-stone-900 font-bold text-xs shadow-md shadow-amber-950/40 transition active:scale-95">
+        <svg class="w-4 h-4 text-stone-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        <span>Get PWA ZIP</span>
+      </button>
+
+      <!-- Settings Icon -->
+      <button id="openSettingsBtn" title="Settings & Mantras" class="p-2 rounded-full text-stone-300 hover:text-amber-400 hover:bg-stone-800 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN COUNT INTERFACE -->
+  <main class="relative z-10 w-full max-w-md mx-auto px-4 py-2 flex flex-col items-center justify-center flex-grow">
+    
+    <!-- Active Mantra Display -->
+    <div class="text-center mb-4 cursor-pointer group" id="mantraTrigger" title="Tap to switch mantra">
+      <p class="text-xs uppercase tracking-widest text-amber-500/80 font-sacred font-semibold">Active Jaap Mantra</p>
+      <h2 id="activeMantraDisplay" class="text-lg sm:text-xl font-sanskrit text-amber-200 mt-0.5 group-hover:text-amber-300 transition">
+        ॐ नमः शिवाय (Om Namah Shivaya)
+      </h2>
+      <span class="text-[10px] text-stone-500 group-hover:text-stone-400">tap to choose mantra ▾</span>
+    </div>
+
+    <!-- Mala Stats Badges -->
+    <div class="grid grid-cols-2 gap-3 w-full mb-6 max-w-xs">
+      <div class="bg-stone-800/80 border border-amber-900/50 rounded-2xl p-2.5 text-center shadow-lg backdrop-blur-sm">
+        <span class="text-[10px] uppercase tracking-wider text-stone-400 font-semibold block">Malas Done</span>
+        <span id="malaCountDisplay" class="text-2xl font-sacred font-bold text-amber-400">0</span>
+      </div>
+      <div class="bg-stone-800/80 border border-amber-900/50 rounded-2xl p-2.5 text-center shadow-lg backdrop-blur-sm">
+        <span class="text-[10px] uppercase tracking-wider text-stone-400 font-semibold block">Total Jaap</span>
+        <span id="lifetimeCountDisplay" class="text-2xl font-sacred font-bold text-stone-200">0</span>
+      </div>
+    </div>
+
+    <!-- BIG INTERACTIVE BEAD / COUNTER CIRCLE -->
+    <div class="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center my-2">
+      <!-- SVG Circular Progress Ring -->
+      <svg class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 200 200">
+        <!-- Background Track -->
+        <circle cx="100" cy="100" r="88" class="text-stone-800/90" stroke="currentColor" stroke-width="9" fill="none" />
+        <!-- Progress Bead Path -->
+        <circle id="progressRing" cx="100" cy="100" r="88" stroke="url(#saffronGradient)" stroke-width="10" stroke-linecap="round" fill="none" class="sacred-ring" stroke-dasharray="552.92" stroke-dashoffset="552.92" />
+        
+        <!-- Gradient Definition -->
+        <defs>
+          <linearGradient id="saffronGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f59e0b" />
+            <stop offset="50%" stop-color="#ea580c" />
+            <stop offset="100%" stop-color="#d97706" />
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <!-- Center Tap Button (Rudraksha / Sacred Lotus Bead Button) -->
+      <button id="counterBtn" aria-label="Chant Jaap Bead"
+        class="tap-zone w-48 h-48 sm:w-52 sm:h-52 rounded-full bg-gradient-to-br from-amber-600 via-amber-700 to-amber-950 border-4 border-amber-400/60 shadow-2xl shadow-amber-600/40 flex flex-col items-center justify-center focus:outline-none transition transform active:scale-95 z-20 cursor-pointer">
+        <span class="text-xs text-amber-200/90 tracking-widest uppercase font-sacred">Chant Bead</span>
+        <span id="currentCountDisplay" class="text-5xl sm:text-6xl font-sacred font-black text-amber-50 drop-shadow-md">0</span>
+        <span class="text-xs font-semibold text-amber-300/80 mt-1">Target: <span id="targetDisplay">108</span></span>
+      </button>
+
+      <!-- Meru / Sacred Bead Marker (Indicator at Top of Mala) -->
+      <div class="absolute -top-1 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-amber-400 rounded-full border-2 border-stone-900 shadow-md shadow-amber-500/50 flex items-center justify-center z-30" title="Meru Bead (Sacred Origin)">
+        <div class="w-1.5 h-1.5 bg-amber-900 rounded-full"></div>
+      </div>
+    </div>
+
+    <!-- Quick Feedback Text -->
+    <p id="malaCelebrationBanner" class="text-xs text-amber-400 font-medium tracking-wide mt-2 h-4 transition opacity-0">
+      ✨ 1 Mala (108 chants) Completed! Har Har Mahadev ✨
+    </p>
+
+    <!-- Quick Control Bar below counter -->
+    <div class="flex items-center space-x-6 mt-4">
+      <!-- Undo Last Count -->
+      <button id="undoBtn" class="text-stone-400 hover:text-amber-300 text-xs flex flex-col items-center transition p-2 active:scale-90">
+        <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+        </svg>
+        <span>Undo</span>
+      </button>
+
+      <!-- Sound Toggle -->
+      <button id="soundToggleBtn" class="text-stone-400 hover:text-amber-300 text-xs flex flex-col items-center transition p-2 active:scale-90">
+        <svg id="soundIconOn" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z"/>
+        </svg>
+        <svg id="soundIconOff" class="w-5 h-5 mb-1 hidden text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+        </svg>
+        <span id="soundLabel">Bell On</span>
+      </button>
+
+      <!-- Haptic Vibration Toggle -->
+      <button id="hapticToggleBtn" class="text-stone-400 hover:text-amber-300 text-xs flex flex-col items-center transition p-2 active:scale-90">
+        <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+        </svg>
+        <span id="hapticLabel">Haptic On</span>
+      </button>
+
+      <!-- Reset Current Jaap -->
+      <button id="resetJaapBtn" class="text-stone-400 hover:text-red-400 text-xs flex flex-col items-center transition p-2 active:scale-90">
+        <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        <span>Reset</span>
+      </button>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="relative z-10 w-full max-w-xl mx-auto px-4 py-3 text-center text-stone-500 text-xs border-t border-amber-900/30">
+    <p>108 Sacred Beads • Tap anywhere inside button or press <kbd class="px-1.5 py-0.5 bg-stone-800 text-stone-300 rounded text-[10px] border border-stone-700">Space</kbd> key</p>
+  </footer>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settingsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-stone-900 border border-amber-700/60 rounded-3xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div class="flex items-center justify-between border-b border-amber-900/50 pb-3 mb-4">
+        <div class="flex items-center space-x-2">
+          <span class="text-amber-500 text-2xl font-sanskrit">ॐ</span>
+          <h3 class="font-sacred font-bold text-amber-300 text-lg">Mala & Jaap Settings</h3>
+        </div>
+        <button id="closeSettingsBtn" class="text-stone-400 hover:text-white p-1">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Target Count Configuration -->
+      <div class="mb-5">
+        <label class="block text-xs uppercase tracking-wider text-stone-400 font-semibold mb-2">Target Count Per Mala</label>
+        <div class="grid grid-cols-4 gap-2 mb-2">
+          <button data-target="11" class="preset-target-btn py-2 rounded-xl border border-stone-700 text-sm font-semibold hover:border-amber-500 hover:text-amber-400">11</button>
+          <button data-target="21" class="preset-target-btn py-2 rounded-xl border border-stone-700 text-sm font-semibold hover:border-amber-500 hover:text-amber-400">21</button>
+          <button data-target="54" class="preset-target-btn py-2 rounded-xl border border-stone-700 text-sm font-semibold hover:border-amber-500 hover:text-amber-400">54</button>
+          <button data-target="108" class="preset-target-btn py-2 rounded-xl border border-amber-500 bg-amber-500/20 text-amber-300 text-sm font-bold">108</button>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="text-xs text-stone-400">Custom target:</span>
+          <input type="number" id="customTargetInput" min="1" max="10000" placeholder="108" class="bg-stone-800 border border-stone-700 rounded-lg px-3 py-1.5 text-sm w-24 text-stone-100 focus:outline-none focus:border-amber-500">
+          <button id="applyCustomTargetBtn" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-xs rounded-lg transition">Set</button>
+        </div>
+      </div>
+
+      <!-- Mantra Selection -->
+      <div class="mb-5">
+        <label class="block text-xs uppercase tracking-wider text-stone-400 font-semibold mb-2">Select Vedic Mantra</label>
+        <div class="space-y-1.5 max-h-44 overflow-y-auto pr-1" id="mantraList">
+          <!-- Populated by JS -->
+        </div>
+        <!-- Custom Mantra Input -->
+        <div class="mt-3 flex items-center space-x-2">
+          <input type="text" id="customMantraInput" placeholder="Add custom mantra..." class="bg-stone-800 border border-stone-700 rounded-lg px-3 py-1.5 text-xs flex-grow text-stone-100 focus:outline-none focus:border-amber-500">
+          <button id="addCustomMantraBtn" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-xs rounded-lg transition">Add</button>
+        </div>
+      </div>
+
+      <!-- Sound & Vibrations -->
+      <div class="mb-5 bg-stone-800/60 p-3 rounded-2xl border border-stone-800">
+        <div class="flex items-center justify-between py-1.5 border-b border-stone-700/50">
+          <span class="text-xs text-stone-300">Tibetan Singing Bowl / Bell on Bead</span>
+          <input type="checkbox" id="modalSoundCheck" class="w-4 h-4 accent-amber-500 cursor-pointer">
+        </div>
+        <div class="flex items-center justify-between py-1.5 pt-2">
+          <span class="text-xs text-stone-300">Device Haptic Vibration on Tap</span>
+          <input type="checkbox" id="modalHapticCheck" class="w-4 h-4 accent-amber-500 cursor-pointer">
+        </div>
+      </div>
+
+      <!-- Danger Zone / Resets -->
+      <div class="pt-2 border-t border-stone-800">
+        <button id="resetAllDataBtn" class="w-full py-2.5 rounded-xl border border-red-900/60 text-red-400 hover:bg-red-950/40 text-xs font-semibold transition">
+          Reset All History & Lifetime Counts
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CONFIRMATION DIALOG MODAL -->
+  <div id="confirmModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-stone-900 border border-amber-800/70 rounded-2xl max-w-sm w-full p-5 text-center shadow-2xl">
+      <h4 id="confirmModalTitle" class="text-base font-bold text-amber-300 font-sacred mb-2">Reset Counters?</h4>
+      <p id="confirmModalDesc" class="text-xs text-stone-400 mb-5 leading-relaxed">Are you sure you want to reset your sacred count?</p>
+      <div class="flex space-x-3">
+        <button id="confirmCancelBtn" class="flex-1 py-2 rounded-xl bg-stone-800 text-stone-300 text-xs font-semibold hover:bg-stone-700 transition">Cancel</button>
+        <button id="confirmOkBtn" class="flex-1 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION TOAST -->
+  <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-amber-500 text-stone-950 font-semibold px-4 py-2 rounded-full text-xs shadow-xl opacity-0 pointer-events-none transition-all duration-300 z-50">
+    Notification
+  </div>
+
+  <!-- APPLICATION CORE LOGIC -->
+  <script>
+    /* -------------------------------------------------------------
+     * 1. PRESET MANTRAS & APP STATE
+     * ----------------------------------------------------------- */
+    const DEFAULT_MANTRAS = [
+      { id: 'shiva', name: 'ॐ नमः शिवाय (Om Namah Shivaya)', deity: 'Lord Shiva' },
+      { id: 'gayatri', name: 'ॐ भूर्भुवः स्वः तत्सवितुर्वरेण्यं भर्गो देवस्य धीमहि धियो यो नः प्रचोदयात् (Gayatri Mantra)', deity: 'Surya / Gayatri' },
+      { id: 'harekrishna', name: 'हरे कृष्ण हरे कृष्ण कृष्ण कृष्ण हरे हरे । हरे राम हरे राम राम राम हरे हरे', deity: 'Maha Mantra' },
+      { id: 'ganesha', name: 'ॐ गं गणपतये नमः (Om Gan Ganapataye Namah)', deity: 'Lord Ganesha' },
+      { id: 'mritunjaya', name: 'ॐ त्र्यम्बकं यजामहे सुगन्धिं पुष्टिवर्धनम् (Mahamrityunjaya Mantra)', deity: 'Lord Shiva' },
+      { id: 'krishna', name: 'ॐ नमो भगवते वासुदेवाय (Om Namo Bhagavate Vasudevaya)', deity: 'Lord Vishnu' },
+      { id: 'ram', name: 'श्री राम जय राम जय जय राम (Sri Rama Jayam)', deity: 'Lord Rama' },
+      { id: 'hanuman', name: 'ॐ हं हनुमते नमः (Om Hanumate Namah)', deity: 'Lord Hanuman' },
+      { id: 'durga', name: 'ॐ दुं दुर्गायै नमः (Om Dum Durgayei Namah)', deity: 'Maa Durga' },
+      { id: 'buddhist', name: 'ॐ मणि पद्मे हूँ (Om Mani Padme Hum)', deity: 'Avalokiteshvara' }
+    ];
+
+    const STORAGE_KEY = 'japa_mala_pwa_state_v1';
+
+    let state = {
+      currentCount: 0,
+      targetCount: 108,
+      malaCount: 0,
+      lifetimeCount: 0,
+      activeMantra: 'ॐ नमः शिवाय (Om Namah Shivaya)',
+      soundEnabled: true,
+      hapticEnabled: true,
+      mantras: [...DEFAULT_MANTRAS]
+    };
+
+    // Load from local storage
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          state = { ...state, ...parsed };
+        }
+      } catch (e) {
+        console.warn('Could not read from localStorage', e);
+      }
+    }
+
+    // Save to local storage
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.warn('Could not save to localStorage', e);
+      }
+    }
+
+    /* -------------------------------------------------------------
+     * 2. AUDIO SYNTHESIS (Zero External Assets - Pure Web Audio API)
+     * ----------------------------------------------------------- */
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    // Soft resonant prayer click / wooden bead sound
+    function playBeadClickSound() {
+      if (!state.soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        // Frequency designed like a hollow wooden rudraksha bead knock
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(420, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.05);
+
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.055);
+      } catch (e) {
+        console.error('Audio play error', e);
+      }
+    }
+
+    // Sacred Tibetan Singing Bell / Temple Gong sound upon 108 Mala completion
+    function playSacredGongSound() {
+      if (!state.soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        const fundamental = 261.63; // Middle C / Sacred Meditative resonance
+        const harmonics = [1, 2.76, 5.4, 8.9];
+        const gains = [0.4, 0.25, 0.15, 0.05];
+
+        harmonics.forEach((h, index) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(fundamental * h, ctx.currentTime);
+
+          gain.gain.setValueAtTime(gains[index], ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 3.0);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start();
+          osc.stop(ctx.currentTime + 3.1);
+        });
+      } catch (e) {
+        console.error('Bell audio error', e);
+      }
+    }
+
+    /* -------------------------------------------------------------
+     * 3. HAPTIC FEEDBACK (Vibration API)
+     * ----------------------------------------------------------- */
+    function triggerHaptic(type = 'tap') {
+      if (!state.hapticEnabled || !('vibrate' in navigator)) return;
+      try {
+        if (type === 'tap') {
+          navigator.vibrate(28); // subtle crisp tick
+        } else if (type === 'mala') {
+          navigator.vibrate([100, 50, 100, 50, 200]); // festive sacred pattern
+        }
+      } catch (e) {
+        // Ignored if browser restricts without user interaction
+      }
+    }
+
+    /* -------------------------------------------------------------
+     * 4. UI UPDATE LOGIC
+     * ----------------------------------------------------------- */
+    const currentCountDisplay = document.getElementById('currentCountDisplay');
+    const targetDisplay = document.getElementById('targetDisplay');
+    const malaCountDisplay = document.getElementById('malaCountDisplay');
+    const lifetimeCountDisplay = document.getElementById('lifetimeCountDisplay');
+    const activeMantraDisplay = document.getElementById('activeMantraDisplay');
+    const progressRing = document.getElementById('progressRing');
+    const celebrationBanner = document.getElementById('malaCelebrationBanner');
+
+    const soundIconOn = document.getElementById('soundIconOn');
+    const soundIconOff = document.getElementById('soundIconOff');
+    const soundLabel = document.getElementById('soundLabel');
+    const hapticLabel = document.getElementById('hapticLabel');
+
+    const circumference = 2 * Math.PI * 88; // radius 88 -> ~552.92
+
+    function updateUI() {
+      currentCountDisplay.textContent = state.currentCount;
+      targetDisplay.textContent = state.targetCount;
+      malaCountDisplay.textContent = state.malaCount;
+      lifetimeCountDisplay.textContent = state.lifetimeCount;
+      activeMantraDisplay.textContent = state.activeMantra;
+
+      // Update circular progress bar
+      const progressFraction = Math.min(state.currentCount / state.targetCount, 1);
+      const offset = circumference - (progressFraction * circumference);
+      progressRing.style.strokeDashoffset = offset;
+
+      // Update Sound & Haptic toggle labels
+      if (state.soundEnabled) {
+        soundIconOn.classList.remove('hidden');
+        soundIconOff.classList.add('hidden');
+        soundLabel.textContent = 'Bell On';
+      } else {
+        soundIconOn.classList.add('hidden');
+        soundIconOff.classList.remove('hidden');
+        soundLabel.textContent = 'Muted';
+      }
+
+      hapticLabel.textContent = state.hapticEnabled ? 'Haptic On' : 'Haptic Off';
+      document.getElementById('modalSoundCheck').checked = state.soundEnabled;
+      document.getElementById('modalHapticCheck').checked = state.hapticEnabled;
+      document.getElementById('customTargetInput').value = state.targetCount;
+
+      renderMantraList();
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.remove('opacity-0');
+      toast.classList.add('opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0');
+      }, 2500);
+    }
+
+    /* -------------------------------------------------------------
+     * 5. COUNTER ACTIONS & MALA COMPLETION
+     * ----------------------------------------------------------- */
+    function incrementCount() {
+      state.currentCount++;
+      state.lifetimeCount++;
+
+      // Check if target reached (e.g., 108)
+      if (state.currentCount >= state.targetCount) {
+        state.malaCount++;
+        state.currentCount = 0; // Reset active mala jaap count to 0
+
+        playSacredGongSound();
+        triggerHaptic('mala');
+
+        // Show celebratory banner
+        celebrationBanner.textContent = `✨ 1 Mala (${state.targetCount} chants) Completed! Har Har Mahadev ✨`;
+        celebrationBanner.classList.remove('opacity-0');
+        setTimeout(() => {
+          celebrationBanner.classList.add('opacity-0');
+        }, 4000);
+
+        showToast(`🎉 Mala Completed! Total Malas: ${state.malaCount}`);
+      } else {
+        playBeadClickSound();
+        triggerHaptic('tap');
+      }
+
+      saveState();
+      updateUI();
+    }
+
+    function undoCount() {
+      if (state.currentCount > 0) {
+        state.currentCount--;
+        if (state.lifetimeCount > 0) state.lifetimeCount--;
+        saveState();
+        updateUI();
+        showToast('Last count undone');
+      }
+    }
+
+    // Modal Confirmation Helper
+    let pendingConfirmAction = null;
+    function showConfirmation(title, message, action) {
+      document.getElementById('confirmModalTitle').textContent = title;
+      document.getElementById('confirmModalDesc').textContent = message;
+      pendingConfirmAction = action;
+      document.getElementById('confirmModal').classList.remove('hidden');
+    }
+
+    document.getElementById('confirmCancelBtn').addEventListener('click', () => {
+      document.getElementById('confirmModal').classList.add('hidden');
+      pendingConfirmAction = null;
+    });
+
+    document.getElementById('confirmOkBtn').addEventListener('click', () => {
+      if (typeof pendingConfirmAction === 'function') {
+        pendingConfirmAction();
+      }
+      document.getElementById('confirmModal').classList.add('hidden');
+      pendingConfirmAction = null;
+    });
+
+    // Reset Jaap Button
+    document.getElementById('resetJaapBtn').addEventListener('click', () => {
+      showConfirmation(
+        'Reset Active Mala?',
+        `This will reset your current chanting count from ${state.currentCount} back to 0. Completed Malas will remain intact.`,
+        () => {
+          state.currentCount = 0;
+          saveState();
+          updateUI();
+          showToast('Current Mala count reset to 0');
+        }
+      );
+    });
+
+    // Reset All Data
+    document.getElementById('resetAllDataBtn').addEventListener('click', () => {
+      showConfirmation(
+        'Reset All Data & Malas?',
+        'This will permanently reset all your Malas completed, lifetime chanting count, and progress.',
+        () => {
+          state.currentCount = 0;
+          state.malaCount = 0;
+          state.lifetimeCount = 0;
+          saveState();
+          updateUI();
+          showToast('All sacred counter history has been reset');
+          document.getElementById('settingsModal').classList.add('hidden');
+        }
+      );
+    });
+
+    /* -------------------------------------------------------------
+     * 6. LISTENERS & INTERACTION
+     * ----------------------------------------------------------- */
+    const counterBtn = document.getElementById('counterBtn');
+    counterBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      incrementCount();
+    });
+
+    document.getElementById('undoBtn').addEventListener('click', undoCount);
+
+    // Toggle Sound
+    document.getElementById('soundToggleBtn').addEventListener('click', () => {
+      state.soundEnabled = !state.soundEnabled;
+      saveState();
+      updateUI();
+      showToast(state.soundEnabled ? 'Bell sounds turned ON' : 'Sounds Muted');
+    });
+
+    // Toggle Haptics
+    document.getElementById('hapticToggleBtn').addEventListener('click', () => {
+      state.hapticEnabled = !state.hapticEnabled;
+      saveState();
+      updateUI();
+      showToast(state.hapticEnabled ? 'Haptic feedback ON' : 'Haptic feedback OFF');
+    });
+
+    // Spacebar to count
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        incrementCount();
+      }
+    });
+
+    /* -------------------------------------------------------------
+     * 7. SETTINGS & MANTRA MANAGEMENT
+     * ----------------------------------------------------------- */
+    const settingsModal = document.getElementById('settingsModal');
+    const openSettingsBtn = document.getElementById('openSettingsBtn');
+    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+    const mantraTrigger = document.getElementById('mantraTrigger');
+
+    function openSettings() {
+      settingsModal.classList.remove('hidden');
+    }
+    function closeSettings() {
+      settingsModal.classList.add('hidden');
+    }
+
+    openSettingsBtn.addEventListener('click', openSettings);
+    mantraTrigger.addEventListener('click', openSettings);
+    closeSettingsBtn.addEventListener('click', closeSettings);
+
+    // Modal checkbox toggles
+    document.getElementById('modalSoundCheck').addEventListener('change', (e) => {
+      state.soundEnabled = e.target.checked;
+      saveState();
+      updateUI();
+    });
+    document.getElementById('modalHapticCheck').addEventListener('change', (e) => {
+      state.hapticEnabled = e.target.checked;
+      saveState();
+      updateUI();
+    });
+
+    // Preset Target Buttons
+    document.querySelectorAll('.preset-target-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = parseInt(btn.dataset.target, 10);
+        setTargetCount(val);
+      });
+    });
+
+    document.getElementById('applyCustomTargetBtn').addEventListener('click', () => {
+      const val = parseInt(document.getElementById('customTargetInput').value, 10);
+      if (val && val > 0) {
+        setTargetCount(val);
+      } else {
+        showToast('Please enter a valid count greater than 0');
+      }
+    });
+
+    function setTargetCount(val) {
+      state.targetCount = val;
+      if (state.currentCount >= val) {
+        state.currentCount = 0;
+      }
+      saveState();
+      updateUI();
+      showToast(`Target count set to ${val}`);
+      closeSettings();
+    }
+
+    function renderMantraList() {
+      const container = document.getElementById('mantraList');
+      container.innerHTML = '';
+      state.mantras.forEach(m => {
+        const isSelected = state.activeMantra === m.name;
+        const row = document.createElement('div');
+        row.className = `p-2.5 rounded-xl border text-xs cursor-pointer flex items-center justify-between transition ${
+          isSelected 
+            ? 'bg-amber-950/60 border-amber-500 text-amber-200 font-semibold' 
+            : 'bg-stone-800/60 border-stone-700/60 text-stone-300 hover:border-amber-600/50'
+        }`;
+        row.innerHTML = `
+          <div class="flex-grow pr-2">
+            <p class="font-sanskrit text-sm leading-snug">${m.name}</p>
+            <span class="text-[10px] text-amber-500/80">${m.deity || 'Sacred Mantra'}</span>
+          </div>
+          ${isSelected ? '<span class="text-amber-400 font-bold">✓</span>' : ''}
+        `;
+        row.addEventListener('click', () => {
+          state.activeMantra = m.name;
+          saveState();
+          updateUI();
+          showToast(`Active Mantra updated`);
+          closeSettings();
+        });
+        container.appendChild(row);
+      });
+    }
+
+    document.getElementById('addCustomMantraBtn').addEventListener('click', () => {
+      const input = document.getElementById('customMantraInput');
+      const val = input.value.trim();
+      if (val) {
+        const newMantra = {
+          id: 'custom_' + Date.now(),
+          name: val,
+          deity: 'Custom Mantra'
+        };
+        state.mantras.push(newMantra);
+        state.activeMantra = val;
+        input.value = '';
+        saveState();
+        updateUI();
+        showToast('Custom mantra added and selected!');
+      }
+    });
+
+    /* -------------------------------------------------------------
+     * 8. PROGRAMMATIC ICON & PWA GENERATION
+     * ----------------------------------------------------------- */
+    // Generate a sacred Om & Mala Icon as a PNG Blob using HTML5 Canvas
+    function generateOmIconBlob(size) {
+      return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+
+        // Saffron radial gradient background
+        const grad = ctx.createRadialGradient(size/2, size/2, size * 0.1, size/2, size/2, size/2);
+        grad.addColorStop(0, '#f59e0b');
+        grad.addColorStop(0.7, '#d97706');
+        grad.addColorStop(1, '#78350f');
+
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, size, size);
+
+        // Circular bead border
+        ctx.strokeStyle = '#fef3c7';
+        ctx.lineWidth = size * 0.03;
+        ctx.beginPath();
+        ctx.arc(size/2, size/2, size * 0.42, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // 12 Decorative outer beads
+        const numBeads = 12;
+        ctx.fillStyle = '#fde68a';
+        for(let i = 0; i < numBeads; i++) {
+          const angle = (i / numBeads) * Math.PI * 2;
+          const bx = size/2 + (size * 0.42) * Math.cos(angle);
+          const by = size/2 + (size * 0.42) * Math.sin(angle);
+          ctx.beginPath();
+          ctx.arc(bx, by, size * 0.025, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Sacred OM (ॐ) symbol in center
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${Math.round(size * 0.48)}px "Yatra One", "Cinzel", "Arial", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+        ctx.shadowBlur = size * 0.04;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = size * 0.01;
+        ctx.fillText('ॐ', size/2, size/2 + (size * 0.03));
+
+        canvas.toBlob((blob) => {
+          resolve(blob);
+        }, 'image/png');
+      });
+    }
+
+    /* -------------------------------------------------------------
+     * 9. ZIP EXPORTER ENGINE
+     * ----------------------------------------------------------- */
+    const downloadZipBtn = document.getElementById('downloadZipBtn');
+
+    downloadZipBtn.addEventListener('click', async () => {
+      downloadZipBtn.disabled = true;
+      const originalText = downloadZipBtn.innerHTML;
+      downloadZipBtn.innerHTML = `
+        <svg class="animate-spin w-4 h-4 text-stone-950" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+        <span>Packaging...</span>
+      `;
+
+      try {
+        const zip = new JSZip();
+
+        // 1. Generate icon PNG blobs
+        const [icon192Blob, icon512Blob] = await Promise.all([
+          generateOmIconBlob(192),
+          generateOmIconBlob(512)
+        ]);
+
+        zip.file("icon-192.png", icon192Blob);
+        zip.file("icon-512.png", icon512Blob);
+
+        // 2. manifest.json
+        const manifestContent = {
+          "name": "Japa Mala - Sacred Mantra Counter",
+          "short_name": "Japa Mala",
+          "description": "Sacred 108 Japa Mala Counter for Hindu Mantra Meditation and Jaap with offline capabilities.",
+          "start_url": "./index.html",
+          "display": "standalone",
+          "background_color": "#120c06",
+          "theme_color": "#d97706",
+          "orientation": "portrait",
+          "icons": [
+            {
+              "src": "icon-192.png",
+              "sizes": "192x192",
+              "type": "image/png",
+              "purpose": "any maskable"
+            },
+            {
+              "src": "icon-512.png",
+              "sizes": "512x512",
+              "type": "image/png",
+              "purpose": "any maskable"
+            }
+          ]
+        };
+        zip.file("manifest.json", JSON.stringify(manifestContent, null, 2));
+
+        // 3. Service Worker: sw.js
+        const swContent = `// Japa Mala Offline Service Worker
+const CACHE_NAME = 'japa-mala-v1';
+const ASSETS_TO_CACHE = [
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE);
+    })
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(event.request).catch(() => {
+        // Fallback to cached index.html for navigation requests
+        if (event.request.mode === 'navigate') {
+          return caches.match('./index.html');
+        }
+      });
+    })
+  );
+});
+`;
+        zip.file("sw.js", swContent);
+
+        // 4. README.md
+        const readmeContent = `# ॐ Sacred Japa Mala - Progressive Web App (PWA)
+
+A meditative, modern Hindu Mantra Jaap and 108 Mala Counter with resonant bells, haptics, and custom sacred mantras.
+
+## Features
+- **108 Target Mala System:** Default sacred Vedic count of 108 beads with automatic Mala roll-over.
+- **Synthesized Singing Bowl & Bead Click:** Uses the HTML5 Web Audio API to produce resonant temple bells offline without relying on external MP3 links.
+- **Haptic Tactile Feedback:** Vibration response on every chant bead.
+- **Progress Tracking:** Circular lotus progress ring, Malas completed, and Lifetime Jaap count saved in localStorage.
+- **Customizable Targets & Mantras:** Quick presets (11, 21, 54, 108, or custom) and pre-loaded mantras (Om Namah Shivaya, Gayatri, Hare Krishna, Mahamrityunjaya, etc.).
+- **100% Offline Progressive Web App (PWA):** Works seamlessly without an internet connection.
+
+## How to Run & Deploy
+### 1. Run Locally:
+Simply open \`index.html\` in any web browser, or use a local static server:
+\`\`\`bash
+npx serve .
+# or
+python3 -m http.server 8000
+\`\`\`
+
+### 2. Deploy to Free Hosting (GitHub Pages, Netlify, Vercel, Firebase):
+1. Upload all extracted files (\`index.html\`, \`sw.js\`, \`manifest.json\`, \`icon-192.png\`, \`icon-512.png\`) to your repository or web server.
+2. Ensure HTTPS is enabled (required for PWA installation and Service Workers).
+
+### 3. Install on Mobile (Android & iOS):
+- **Android / Chrome:** Open the URL, tap the browser menu (3 dots) and select **"Add to Home Screen"** or tap the install prompt.
+- **iOS / Safari:** Open the URL in Safari, tap the **Share** button, and choose **"Add to Home Screen"**.
+
+Har Har Mahadev • Om Shanti Shanti Shanti
+`;
+        zip.file("README.md", readmeContent);
+
+        // 5. Complete standalone index.html (with Service Worker registration pre-hooked)
+        let htmlSource = document.documentElement.outerHTML;
+
+        // Ensure Service worker registration snippet is present in packaged index.html
+        if (!htmlSource.includes('serviceWorker.register')) {
+          const swRegistrationScript = `
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker Registered', reg.scope))
+          .catch(err => console.log('SW registration failed:', err));
+      });
+    }
+  <\\/script>`;
+          htmlSource = htmlSource.replace('</body>', swRegistrationScript + '\n</body>');
+        }
+
+        // Add manifest link if not already linked
+        if (!htmlSource.includes('rel="manifest"')) {
+          htmlSource = htmlSource.replace('<head>', '<head>\n  <link rel="manifest" href="manifest.json">');
+        }
+
+        zip.file("index.html", "<!DOCTYPE html>\n" + htmlSource);
+
+        // Generate and trigger download
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+        saveAs(zipBlob, "japa-mala-pwa.zip");
+        showToast("✓ Japa Mala PWA ZIP downloaded successfully!");
+      } catch (err) {
+        console.error("Failed to generate zip", err);
+        showToast("Failed to package ZIP: " + err.message);
+      } finally {
+        downloadZipBtn.disabled = false;
+        downloadZipBtn.innerHTML = originalText;
+      }
+    });
+
+    /* -------------------------------------------------------------
+     * 10. IN-APP SERVICE WORKER & INIT
+     * ----------------------------------------------------------- */
+    // If running in supported HTTPS or localhost environment, register SW
+    if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {
+          // Silent fallback when running as standalone preview
+        });
+      });
+    }
+
+    // App Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      updateUI();
+    });
+  </script>
+</body>
+</html>
